@@ -7,1266 +7,870 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>A Project With No Purpose</title>
 <link rel="preconnect" href="https://kohmedia.b-cdn.net" crossorigin>
-
 <style>
-/* === BASE === */
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{
-  width:100%;height:100%;
-  background:#000;color:#cfe0ff;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  -webkit-font-smoothing:antialiased;
-  overscroll-behavior:none;
-  overflow:hidden;
-  touch-action:manipulation;
-}
-
-:root{
-  --z-video:1;
-  --z-canvas:100;
-  --z-buttons:200;
-  --z-hud:300;
-  --z-curtain:9999;
-  --egg-scale:0.95;
-  --safe-bottom:env(safe-area-inset-bottom,20px);
-}
-
-/* === VIDEO LAYER === */
-#vwrap{
-  position:fixed;inset:0;
-  z-index:var(--z-video);
-  overflow:hidden;background:#000;
-}
-#video{
-  position:absolute;
-  left:50%;top:50%;
-  width:100vw;height:100svh;
-  object-fit:contain;
-  object-position:center center;
-  transform:translate(-50%,-50%) scale(var(--egg-scale));
-  background:#000;
-  opacity:0;
-  transition:opacity .2s ease;
-  pointer-events:none;
-}
+html,body{width:100%;height:100%;background:#000;color:#cfe0ff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none;overflow:hidden;touch-action:manipulation}
+:root{--z-video:1;--z-canvas:100;--z-buttons:200;--z-hud:300;--z-curtain:9999;--egg-scale:0.95;--safe-bottom:env(safe-area-inset-bottom,20px)}
+#vwrap{position:fixed;inset:0;z-index:var(--z-video);overflow:hidden;background:#000}
+#video{position:absolute;left:50%;top:50%;width:100vw;height:100svh;object-fit:contain;object-position:center center;transform:translate(-50%,-50%) scale(var(--egg-scale));background:#000;opacity:0;transition:opacity .2s ease;pointer-events:none}
 #video.visible{opacity:1}
-
-/* === ORB CANVAS === */
-#orbCanvas{
-  position:fixed;inset:0;
-  z-index:var(--z-canvas);
-  width:100vw;height:100svh;
-  background:transparent;
-  pointer-events:none;
-}
-
-/* === BLACK HOLE CONTAINER === */
-#blackhole{
-  position:fixed;inset:0;
-  z-index:var(--z-canvas);
-  display:none;
-  pointer-events:auto;
-}
+#orbCanvas{position:fixed;inset:0;z-index:var(--z-canvas);width:100vw;height:100svh;background:transparent;pointer-events:none}
+#blackhole{position:fixed;inset:0;z-index:var(--z-canvas);display:none;pointer-events:auto}
 #blackhole.active{display:block}
-
-/* === FLOATING BUTTONS === */
-#buttons-container{
-  position:fixed;inset:0;
-  z-index:var(--z-buttons);
-  pointer-events:none;
-  display:none;
-}
+#buttons-container{position:fixed;inset:0;z-index:var(--z-buttons);pointer-events:none;display:none}
 #buttons-container.active{display:block}
-
-.float-btn{
-  position:absolute;
-  width:60px;height:60px;
-  border-radius:50%;
-  background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.15),rgba(80,80,80,0.4));
-  border:1px solid rgba(255,255,255,0.2);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  cursor:pointer;
-  pointer-events:auto;
-  opacity:0;
-  transform:scale(0);
-  transition:transform 0.3s ease,box-shadow 0.3s ease;
-  box-shadow:0 0 20px rgba(255,255,255,0.1);
-}
+.float-btn{position:absolute;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.15),rgba(80,80,80,0.4));border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);cursor:pointer;pointer-events:auto;opacity:0;transform:scale(0);transition:transform 0.3s ease,box-shadow 0.3s ease;box-shadow:0 0 20px rgba(255,255,255,0.1)}
 .float-btn:active{transform:scale(1.15)!important;box-shadow:0 0 40px rgba(246,217,107,0.5)}
-.float-btn .icon{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;
-  color:rgba(255,255,255,0.8);
-}
-
-/* === HUD EQUALIZER === */
-#hud{
-  position:fixed;
-  bottom:calc(20px + var(--safe-bottom));
-  left:50%;
-  transform:translateX(-50%);
-  z-index:var(--z-hud);
-  display:none;
-  align-items:flex-end;
-  gap:3px;
-  padding:12px 20px;
-  background:rgba(0,0,0,0.4);
-  border-radius:20px;
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  opacity:0;
-  transition:opacity 0.5s ease;
-}
+.float-btn .icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:24px;color:rgba(255,255,255,0.8)}
+#hud{position:fixed;bottom:calc(20px + var(--safe-bottom));left:50%;transform:translateX(-50%);z-index:var(--z-hud);display:none;align-items:flex-end;gap:3px;padding:12px 20px;background:rgba(0,0,0,0.4);border-radius:20px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;transition:opacity 0.5s ease}
 #hud.visible{display:flex;opacity:1}
 #hud.fadeout{opacity:0}
-
-.eq-bar{
-  width:4px;
-  background:linear-gradient(to top,#f6d96b,#fff);
-  border-radius:2px;
-  min-height:4px;
-  transition:height 0.05s ease;
-}
-
-/* === CURTAIN === */
-#curtain{
-  position:fixed;inset:0;
-  background:#000;
-  z-index:var(--z-curtain);
-  cursor:pointer;
-  -webkit-tap-highlight-color:transparent;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
+.eq-bar{width:4px;background:linear-gradient(to top,#f6d96b,#fff);border-radius:2px;min-height:4px;transition:height 0.05s ease}
+#curtain{position:fixed;inset:0;background:#000;z-index:var(--z-curtain);cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;align-items:center;justify-content:center}
 #curtain.hidden{display:none}
-
-#loading-text{
-  font-size:14px;
-  color:#666;
-  letter-spacing:0.5px;
-  opacity:0;
-  animation:pulse 2s ease-in-out infinite;
-}
-@keyframes pulse{
-  0%,100%{opacity:0.3}
-  50%{opacity:0.8}
-}
-
-/* === HINT TEXT === */
-#hint{
-  position:fixed;
-  left:50%;bottom:12svh;
-  transform:translateX(-50%);
-  font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  color:#cfe0ff;
-  opacity:0;
-  transition:opacity .3s ease;
-  pointer-events:none;
-  z-index:var(--z-hud);
-  text-align:center;
-  max-width:80%;
-}
+#loading-text{font-size:14px;color:#666;letter-spacing:0.5px;opacity:0;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:0.3}50%{opacity:0.8}}
+#hint{position:fixed;left:50%;bottom:12svh;transform:translateX(-50%);font:14px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#cfe0ff;opacity:0;transition:opacity .3s ease;pointer-events:none;z-index:var(--z-hud);text-align:center;max-width:80%}
 #hint.on{opacity:0.9}
-
-/* === BLACK HOLE FX (from 2nd code block) === */
 .bhfx-host{position:relative}
 .bhfx-overlay,.bhfx-echo-canvas{position:absolute;inset:0;pointer-events:none}
-.bhfx-echo-ring{
-  position:absolute;width:2px;height:2px;border-radius:999px;pointer-events:none;
-  border:1px solid rgba(255,255,255,.65);box-shadow:0 0 10px rgba(255,255,255,.35);
-  transform:translate(-50%,-50%) scale(1);opacity:.95;will-change:transform,opacity;
-}
-
-@keyframes bhfx-wobble{
-  0%{transform:translateZ(0) scale(1)}
-  20%{transform:translateZ(0) scaleX(1.03) scaleY(.985)}
-  45%{transform:translateZ(0) scaleX(.992) scaleY(1.012)}
-  65%{transform:translateZ(0) scaleX(1.012) scaleY(.992)}
-  100%{transform:translateZ(0) scale(1)}
-}
+.bhfx-echo-ring{position:absolute;width:2px;height:2px;border-radius:999px;pointer-events:none;border:1px solid rgba(255,255,255,.65);box-shadow:0 0 10px rgba(255,255,255,.35);transform:translate(-50%,-50%) scale(1);opacity:.95;will-change:transform,opacity}
+@keyframes bhfx-wobble{0%{transform:translateZ(0) scale(1)}20%{transform:translateZ(0) scaleX(1.03) scaleY(.985)}45%{transform:translateZ(0) scaleX(.992) scaleY(1.012)}65%{transform:translateZ(0) scaleX(1.012) scaleY(.992)}100%{transform:translateZ(0) scale(1)}}
 .bhfx-wobbling{animation:bhfx-wobble 700ms cubic-bezier(.36,.07,.19,.97)}
-
-@keyframes bhfx-pulse{
-  0%{box-shadow:0 0 0 rgba(246,217,107,0),inset 0 0 0 rgba(246,217,107,.0)}
-  40%{box-shadow:0 0 14px rgba(246,217,107,.45),inset 0 0 18px rgba(246,217,107,.15)}
-  100%{box-shadow:0 0 0 rgba(246,217,107,0),inset 0 0 0 rgba(246,217,107,.0)}
-}
+@keyframes bhfx-pulse{0%{box-shadow:0 0 0 rgba(246,217,107,0),inset 0 0 0 rgba(246,217,107,.0)}40%{box-shadow:0 0 14px rgba(246,217,107,.45),inset 0 0 18px rgba(246,217,107,.15)}100%{box-shadow:0 0 0 rgba(246,217,107,0),inset 0 0 0 rgba(246,217,107,.0)}}
 .bhfx-attn{animation:bhfx-pulse 700ms ease-in-out;border-radius:12px}
-
-/* === DEBUG === */
-#dbg{
-  position:fixed;left:10px;top:10px;
-  color:#b6ffb6;font:11px/1.35 ui-monospace,monospace;
-  background:rgba(0,0,0,.7);padding:8px 10px;border-radius:10px;
-  opacity:0;transition:opacity .15s;z-index:9999;
-  white-space:pre;max-width:90vw;pointer-events:none;
-}
+#dbg{position:fixed;left:10px;top:10px;color:#b6ffb6;font:11px/1.35 ui-monospace,monospace;background:rgba(0,0,0,.7);padding:8px 10px;border-radius:10px;opacity:0;transition:opacity .15s;z-index:9999;white-space:pre;max-width:90vw;pointer-events:none}
 #dbg.on{opacity:.95}
 </style>
 </head>
-
 <body>
-<!-- Video layer -->
-<div id="vwrap" aria-hidden="true">
-  <video id="video" playsinline webkit-playsinline muted preload="auto"></video>
-</div>
-
-<!-- Orb canvas overlay -->
+<div id="vwrap" aria-hidden="true"><video id="video" playsinline webkit-playsinline muted preload="auto"></video></div>
 <canvas id="orbCanvas"></canvas>
-
-<!-- Black hole container (appears after eggopen) -->
 <div id="blackhole" class="bhfx-host" data-blackhole></div>
-
-<!-- Floating buttons container -->
 <div id="buttons-container">
-  <div class="float-btn" data-btn="0" data-bh-attention><span class="icon">&#9733;</span></div>
-  <div class="float-btn" data-btn="1" data-bh-attention><span class="icon">&#9829;</span></div>
-  <div class="float-btn" data-btn="2" data-bh-attention><span class="icon">&#9790;</span></div>
-  <div class="float-btn" data-btn="3" data-bh-attention><span class="icon">&#9788;</span></div>
-  <div class="float-btn" data-btn="4" data-bh-attention><span class="icon">&#10047;</span></div>
-  <div class="float-btn" data-btn="5" data-bh-attention><span class="icon">&#9672;</span></div>
+<div class="float-btn" data-btn="0" data-bh-attention><span class="icon">&#9733;</span></div>
+<div class="float-btn" data-btn="1" data-bh-attention><span class="icon">&#9829;</span></div>
+<div class="float-btn" data-btn="2" data-bh-attention><span class="icon">&#9790;</span></div>
+<div class="float-btn" data-btn="3" data-bh-attention><span class="icon">&#9788;</span></div>
+<div class="float-btn" data-btn="4" data-bh-attention><span class="icon">&#10047;</span></div>
+<div class="float-btn" data-btn="5" data-bh-attention><span class="icon">&#9672;</span></div>
 </div>
-
-<!-- HUD Equalizer -->
 <div id="hud"></div>
-
-<!-- Hidden audio elements -->
 <audio id="greetingAudio" preload="auto" playsinline crossorigin="anonymous"></audio>
 <audio id="ambientAudio" preload="auto" playsinline loop crossorigin="anonymous"></audio>
 <audio id="userAudio" preload="auto" playsinline crossorigin="anonymous"></audio>
-
-<!-- Start curtain -->
-<div id="curtain" aria-label="Tap to begin">
-  <span id="loading-text">aprojectwithnopurpose.com</span>
-</div>
-
-<!-- Hint text -->
+<div id="curtain" aria-label="Tap to begin"><span id="loading-text">aprojectwithnopurpose.com</span></div>
 <div id="hint" aria-hidden="true"></div>
-
-<!-- Debug overlay -->
 <div id="dbg"></div>
-
 <script>
 (function(){
 "use strict";
-
-/* ============================================
-   CONFIGURATION
-   ============================================ */
-const CDN = "https://kohmedia.b-cdn.net";
-const VIDEO_INTRO = `${CDN}/eggstart.MP4`;
-const VIDEO_OPEN = `${CDN}/eggopen.MP4`;
-const LOOP_TAIL_SEC = 3.0;
-
-// Time-based audio greetings (GitHub-hosted via Bunny CDN)
-const GREETINGS = {
-  morning: ["morningbirdie1.mp3","morninghole.mp3","morningrobot2.mp3"],
-  noon: ["noonartificial.mp3","noonempty1.mp3","noonempty2.mp3"],
-  evening: ["eveningcyborg2.mp3","eveninghu.mp3","eveningpunyoo.mp3"],
-  night: ["nightarti.mp3","nightcosmic.mp3","nightfucker1.mp3","nightsilent.mp3"]
+var CDN="https://kohmedia.b-cdn.net";
+var VIDEO_INTRO=CDN+"/eggstart.MP4";
+var VIDEO_OPEN=CDN+"/eggopen.MP4";
+var LOOP_TAIL_SEC=3.0;
+var GREETINGS={
+morning:["morningbirdie1.mp3","morninghole.mp3","morningrobot2.mp3"],
+noon:["noonartificial.mp3","noonempty1.mp3","noonempty2.mp3"],
+evening:["eveningcyborg2.mp3","eveninghu.mp3","eveningpunyoo.mp3"],
+night:["nightarti.mp3","nightcosmic.mp3","nightfucker1.mp3","nightsilent.mp3"]
 };
+var AMBIENT_URL=CDN+"/audio/ambient.mp3";
+var FORM_MS=4000;
+var MIC_AUTO_MS=1500;
+var HOTSPOT_NX=0.50,HOTSPOT_NY=0.46;
+var ORB_MAX_F=0.345*0.40;
+var R0_PX=0.8;
+var WEB_GAIN=1.35;
 
-// Ambient audio for arrival phase
-const AMBIENT_URL = `${CDN}/audio/ambient.mp3`;
+var video=document.getElementById("video");
+var orbCanvas=document.getElementById("orbCanvas");
+var orbCtx=orbCanvas.getContext("2d");
+var curtain=document.getElementById("curtain");
+var hint=document.getElementById("hint");
+var greetingAudio=document.getElementById("greetingAudio");
+var ambientAudio=document.getElementById("ambientAudio");
+var userAudio=document.getElementById("userAudio");
+var blackhole=document.getElementById("blackhole");
+var buttonsContainer=document.getElementById("buttons-container");
+var hud=document.getElementById("hud");
+var dbg=document.getElementById("dbg");
 
-// Timings
-const FORM_MS = 4000;
-const MIC_AUTO_MS = 1500;
+var phase="idle";
+var cssW=0,cssH=0;
+var formT0=0,amp=0;
+var loopStart=0,introDuration=0;
+var primeURL=null;
+var micStream=null;
+var mediaRecorder=null;
+var recordedChunks=[];
 
-// Orb settings
-const HOTSPOT_NX = 0.50, HOTSPOT_NY = 0.46;
-const ORB_MAX_F = 0.345 * 0.40;
-const R0_PX = 0.8;
+var AC=window.AudioContext||window.webkitAudioContext;
+var ac=null;
+var analyser=null;
+var greetingSource=null;
 
-// Audio settings
-const WEB_GAIN = 1.35;
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function lerp(a,b,t){return a+(b-a)*t;}
+function easeOutCubic(t){return 1-Math.pow(1-t,3);}
+function hsla(h,s,l,a){return "hsla("+h+","+s+"%,"+l+"%,"+a+")";}
 
-/* ============================================
-   DOM ELEMENTS
-   ============================================ */
-const video = document.getElementById("video");
-const orbCanvas = document.getElementById("orbCanvas");
-const orbCtx = orbCanvas.getContext("2d");
-const curtain = document.getElementById("curtain");
-const hint = document.getElementById("hint");
-const greetingAudio = document.getElementById("greetingAudio");
-const ambientAudio = document.getElementById("ambientAudio");
-const userAudio = document.getElementById("userAudio");
-const blackhole = document.getElementById("blackhole");
-const buttonsContainer = document.getElementById("buttons-container");
-const hud = document.getElementById("hud");
-const dbg = document.getElementById("dbg");
+var GOLD_1={h:48,s:96,l:61};
+var GOLD_2={h:44,s:94,l:53};
+var GOLD_3={h:52,s:90,l:70};
+function tint(c,dl,ds){dl=dl||0;ds=ds||0;return{h:c.h,s:clamp(c.s+ds,0,100),l:clamp(c.l+dl,0,100)};}
 
-/* ============================================
-   STATE
-   ============================================ */
-let phase = "idle";
-// Phases: idle -> intro -> speaking -> listening -> transition -> arrival
-
-let cssW = 0, cssH = 0;
-let formT0 = 0, amp = 0;
-let loopStart = 0, introDuration = 0;
-let primeURL = null;
-let micStream = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-
-/* ============================================
-   AUDIO CONTEXT
-   ============================================ */
-const AC = window.AudioContext || window.webkitAudioContext;
-let ac = null;
-let analyser = null;
-let greetingSource = null;
-
-/* ============================================
-   UTILITIES
-   ============================================ */
-const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-const lerp = (a, b, t) => a + (b - a) * t;
-const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
-const hsla = (h, s, l, a) => `hsla(${h},${s}%,${l}%,${a})`;
-
-const GOLD_1 = {h:48, s:96, l:61};
-const GOLD_2 = {h:44, s:94, l:53};
-const GOLD_3 = {h:52, s:90, l:70};
-const tint = (c, dl=0, ds=0) => ({h:c.h, s:clamp(c.s+ds,0,100), l:clamp(c.l+dl,0,100)});
-
-/* Debug logging */
-function log(m = "") {
-  const info = `APWNP
-phase: ${phase}
-ac: ${ac ? ac.state : "none"}
-${m}`;
-  dbg.textContent = info;
+function log(m){
+m=m||"";
+var info="APWNP\nphase: "+phase+"\nac: "+(ac?ac.state:"none")+"\n"+m;
+dbg.textContent=info;
 }
 
-// Triple-tap top-left for debug
 (function(){
-  let taps = 0, t0 = 0;
-  document.addEventListener("pointerdown", e => {
-    if (e.clientX > 90 || e.clientY > 90) return;
-    const now = performance.now();
-    if (now - t0 > 600) taps = 0;
-    t0 = now;
-    taps++;
-    if (taps >= 3) {
-      dbg.classList.toggle("on");
-      taps = 0;
-      log();
-    }
-  }, {passive: true});
+var taps=0,t0=0;
+document.addEventListener("pointerdown",function(e){
+if(e.clientX>90||e.clientY>90)return;
+var now=performance.now();
+if(now-t0>600)taps=0;
+t0=now;
+taps++;
+if(taps>=3){dbg.classList.toggle("on");taps=0;log();}
+},{passive:true});
 })();
 
-/* Sizing */
-function size() {
-  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-  cssW = window.innerWidth || document.documentElement.clientWidth || 375;
-  cssH = window.innerHeight || document.documentElement.clientHeight || 667;
-  const w = Math.floor(cssW * dpr);
-  const h = Math.floor(cssH * dpr);
-  if (orbCanvas.width !== w || orbCanvas.height !== h) {
-    orbCanvas.width = w;
-    orbCanvas.height = h;
-  }
-  orbCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+function size(){
+var dpr=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+cssW=window.innerWidth||document.documentElement.clientWidth||375;
+cssH=window.innerHeight||document.documentElement.clientHeight||667;
+var w=Math.floor(cssW*dpr);
+var h=Math.floor(cssH*dpr);
+if(orbCanvas.width!==w||orbCanvas.height!==h){
+orbCanvas.width=w;
+orbCanvas.height=h;
 }
-window.addEventListener("resize", size, {passive: true});
+orbCtx.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize",size,{passive:true});
 size();
 
-/* Video box calculation */
-function videoBox() {
-  const vw = video.videoWidth || 0;
-  const vh = video.videoHeight || 0;
-  if (!vw || !vh) return {x: 0, y: 0, w: cssW, h: cssH};
-  const arVid = vw / vh;
-  const arBox = cssW / cssH;
-  let w, h, x, y;
-  if (arBox > arVid) {
-    h = cssH; w = h * arVid; x = (cssW - w) / 2; y = 0;
-  } else {
-    w = cssW; h = w / arVid; x = 0; y = (cssH - h) / 2;
-  }
-  return {x, y, w, h};
+function videoBox(){
+var vw=video.videoWidth||0;
+var vh=video.videoHeight||0;
+if(!vw||!vh)return{x:0,y:0,w:cssW,h:cssH};
+var arVid=vw/vh;
+var arBox=cssW/cssH;
+var w,h,x,y;
+if(arBox>arVid){h=cssH;w=h*arVid;x=(cssW-w)/2;y=0;}
+else{w=cssW;h=w/arVid;x=0;y=(cssH-h)/2;}
+return{x:x,y:y,w:w,h:h};
 }
 
-/* ============================================
-   AUDIO SETUP
-   ============================================ */
-function bucketByHour(h) {
-  if (h >= 5 && h < 12) return "morning";
-  if (h >= 12 && h < 18) return "noon";
-  if (h >= 18 && h < 22) return "evening";
-  return "night";
+function bucketByHour(h){
+if(h>=5&&h<12)return"morning";
+if(h>=12&&h<18)return"noon";
+if(h>=18&&h<22)return"evening";
+return"night";
 }
 
-function lsGet(k, def = null) {
-  try { const v = localStorage.getItem(k); return v === null ? def : v; }
-  catch(_) { return def; }
+function lsGet(k,def){
+def=def===undefined?null:def;
+try{var v=localStorage.getItem(k);return v===null?def:v;}
+catch(e){return def;}
 }
-function lsSet(k, v) {
-  try { localStorage.setItem(k, v); } catch(_) {}
-}
-
-function buildPlaylist() {
-  const bucket = bucketByHour(new Date().getHours());
-  let names = (GREETINGS[bucket] || []).filter(Boolean);
-  if (!names.length) names = Object.values(GREETINGS).flat().filter(Boolean);
-  if (!names.length) return { prime: null, list: [], bucket };
-
-  const keyIdx = `apwnp_idx_${bucket}`;
-  const keyBkt = `apwnp_last_bucket`;
-  const keyLast = `apwnp_last_track_${bucket}`;
-
-  const lastBucket = lsGet(keyBkt, "");
-  let idx = parseInt(lsGet(keyIdx, "-1"), 10);
-  const lastTrack = lsGet(keyLast, "");
-
-  if (bucket !== lastBucket || isNaN(idx) || idx < 0 || idx >= names.length) {
-    idx = Math.floor(Math.random() * names.length);
-  } else {
-    idx = (idx + 1) % names.length;
-  }
-
-  if (names.length > 1 && names[idx] === lastTrack) {
-    idx = (idx + 1) % names.length;
-  }
-
-  const primeName = names[idx];
-  const rest = names.slice(idx + 1).concat(names.slice(0, idx));
-
-  lsSet(keyIdx, String(idx));
-  lsSet(keyBkt, bucket);
-  lsSet(keyLast, primeName);
-
-  const prime = `${CDN}/audio/${encodeURIComponent(primeName)}`;
-  const list = rest.map(n => `${CDN}/audio/${encodeURIComponent(n)}`);
-
-  log(`bucket: ${bucket}\nchosen: ${primeName}`);
-  return { prime, list, bucket };
+function lsSet(k,v){
+try{localStorage.setItem(k,v);}catch(e){}
 }
 
-function unlockAudio() {
-  try {
-    if (!ac && AC) ac = new AC();
-    if (ac && ac.state === 'suspended') ac.resume();
-    const o = ac.createOscillator();
-    const g = ac.createGain();
-    g.gain.value = 0.0001;
-    o.frequency.value = 120;
-    o.connect(g).connect(ac.destination);
-    o.start();
-    o.stop(ac.currentTime + 0.03);
-  } catch(_) {}
+function buildPlaylist(){
+var bucket=bucketByHour(new Date().getHours());
+var names=(GREETINGS[bucket]||[]).filter(Boolean);
+if(!names.length)names=Object.values(GREETINGS).flat().filter(Boolean);
+if(!names.length)return{prime:null,list:[],bucket:bucket};
+
+var keyIdx="apwnp_idx_"+bucket;
+var keyBkt="apwnp_last_bucket";
+var keyLast="apwnp_last_track_"+bucket;
+
+var lastBucket=lsGet(keyBkt,"");
+var idx=parseInt(lsGet(keyIdx,"-1"),10);
+var lastTrack=lsGet(keyLast,"");
+
+if(bucket!==lastBucket||isNaN(idx)||idx<0||idx>=names.length){
+idx=Math.floor(Math.random()*names.length);
+}else{
+idx=(idx+1)%names.length;
 }
 
-function nudgePlay(el, tries = 42, gap = 80) {
-  let n = 0;
-  const tick = () => {
-    try {
-      const p = el.play();
-      if (p && p.catch) p.catch(() => {});
-    } catch(_) {}
-    if (++n < tries && (el.paused || el.currentTime === 0)) {
-      setTimeout(tick, gap);
-    }
-  };
-  tick();
+if(names.length>1&&names[idx]===lastTrack){
+idx=(idx+1)%names.length;
 }
 
-/* ============================================
-   ORB VISUALIZATION
-   ============================================ */
-function drawOrb(now) {
-  requestAnimationFrame(drawOrb);
+var primeName=names[idx];
+var rest=names.slice(idx+1).concat(names.slice(0,idx));
 
-  if (phase === "idle" || phase === "transition" || phase === "arrival") {
-    orbCtx.clearRect(0, 0, cssW, cssH);
-    return;
-  }
+lsSet(keyIdx,String(idx));
+lsSet(keyBkt,bucket);
+lsSet(keyLast,primeName);
 
-  orbCtx.clearRect(0, 0, cssW, cssH);
+var prime=CDN+"/audio/"+encodeURIComponent(primeName);
+var list=rest.map(function(n){return CDN+"/audio/"+encodeURIComponent(n);});
 
-  const b = videoBox();
-  const hp = {x: b.x + HOTSPOT_NX * b.w, y: b.y + HOTSPOT_NY * b.h};
-  const Rmax = Math.min(cssW, cssH) * ORB_MAX_F;
-  const p = clamp((now - formT0) / FORM_MS, 0, 1);
-  const Rform = lerp(R0_PX, Rmax, easeOutCubic(p));
+log("bucket: "+bucket+"\nchosen: "+primeName);
+return{prime:prime,list:list,bucket:bucket};
+}
 
-  let instant = 0;
-  if (analyser) {
-    const buf = new Uint8Array(1024);
-    analyser.getByteTimeDomainData(buf);
-    let peak = 0;
-    for (let i = 0; i < buf.length; i++) {
-      const v = Math.abs(buf[i] - 128) / 128;
-      if (v > peak) peak = v;
-    }
-    const gain = (phase === "speaking") ? 7.2 : 8.2;
-    instant = Math.min(1, peak * gain);
-  }
+function unlockAudio(){
+try{
+if(!ac&&AC)ac=new AC();
+if(ac&&ac.state==="suspended")ac.resume();
+var o=ac.createOscillator();
+var g=ac.createGain();
+g.gain.value=0.0001;
+o.frequency.value=120;
+o.connect(g).connect(ac.destination);
+o.start();
+o.stop(ac.currentTime+0.03);
+}catch(e){}
+}
 
-  amp = lerp(amp, instant, (phase === "speaking" || phase === "listening") ? 0.55 : 0.35);
+function nudgePlay(el,tries,gap){
+tries=tries||42;
+gap=gap||80;
+var n=0;
+function tick(){
+try{
+var p=el.play();
+if(p&&p.catch)p.catch(function(){});
+}catch(e){}
+if(++n<tries&&(el.paused||el.currentTime===0)){
+setTimeout(tick,gap);
+}
+}
+tick();
+}
 
-  const t = (now || performance.now()) * 0.001;
-  const rate = (phase === "speaking") ? (2.4 + 2.0 * amp) :
-               (phase === "listening") ? (2.8 + 1.6 * amp) : 1.6;
-  const wave = 0.5 + 0.5 * Math.sin(t * rate);
-
-  let R = Rform;
-  let pulse = 0.0;
-  if (phase === "speaking") pulse = lerp(0.08, 0.26, amp);
-  if (phase === "listening") pulse = lerp(0.10, 0.34, amp);
-  R = Rform * (1 + pulse * wave);
-
-  const orbCX = hp.x, orbCY = hp.y;
-  const energy = (phase === "intro") ? (0.16 + 0.10 * Math.sin(t * 1.3)) :
-                 (0.28 + 0.26 * Math.sin(t * 1.7));
-
-  // Core gradient
-  const core = orbCtx.createRadialGradient(orbCX, orbCY, R * 0.08, orbCX, orbCY, R);
-  const g1 = tint(GOLD_3, +6, 0);
-  const g2 = tint(GOLD_1, 0, -4);
-  core.addColorStop(0.00, hsla(52, 100, 86, 0.10 + 0.14 * (energy + 1.22 * amp)));
-  core.addColorStop(0.25, hsla(g1.h, g1.s, g1.l, 0.14 + 0.26 * (energy + 1.22 * amp)));
-  core.addColorStop(0.65, hsla(g2.h, g2.s, g2.l, 0.10 + 0.22 * (energy + 1.22 * amp)));
-  core.addColorStop(1.00, "rgba(0,0,0,0)");
-
-  orbCtx.globalCompositeOperation = "source-over";
-  orbCtx.fillStyle = core;
-  orbCtx.fillRect(0, 0, cssW, cssH);
-
-  // Layered glow
-  orbCtx.globalCompositeOperation = "lighter";
-  for (let i = 0; i < 6; i++) {
-    const rr = R * (0.56 + 0.14 * Math.sin(t * 1.9 + i));
-    const ang = t * (0.55 + i * 0.17) + i * 1.7;
-    const ox = Math.cos(ang) * 8;
-    const oy = Math.sin(ang * 1.07) * 8;
-    const g = orbCtx.createRadialGradient(orbCX + ox, orbCY + oy, rr * 0.06, orbCX + ox, orbCY + oy, rr);
-    const rsel = (Math.sin(t * 0.37 + i * 1.11) + 1) / 2;
-    const pick = rsel < 0.50 ? GOLD_1 : (rsel < 0.85 ? GOLD_2 : {h: 38, s: 95, l: 58});
-    const a = 0.14 + 0.32 * (energy + 1.22 * amp);
-    g.addColorStop(0, hsla(pick.h, pick.s, pick.l, a));
-    g.addColorStop(1, "rgba(0,0,0,0)");
-    orbCtx.fillStyle = g;
-    orbCtx.fillRect(0, 0, cssW, cssH);
-  }
-  orbCtx.globalCompositeOperation = "source-over";
+function drawOrb(now){
+requestAnimationFrame(drawOrb);
+if(phase==="idle"||phase==="transition"||phase==="arrival"){
+orbCtx.clearRect(0,0,cssW,cssH);
+return;
+}
+orbCtx.clearRect(0,0,cssW,cssH);
+var b=videoBox();
+var hp={x:b.x+HOTSPOT_NX*b.w,y:b.y+HOTSPOT_NY*b.h};
+var Rmax=Math.min(cssW,cssH)*ORB_MAX_F;
+var p=clamp((now-formT0)/FORM_MS,0,1);
+var Rform=lerp(R0_PX,Rmax,easeOutCubic(p));
+var instant=0;
+if(analyser){
+var buf=new Uint8Array(1024);
+analyser.getByteTimeDomainData(buf);
+var peak=0;
+for(var i=0;i<buf.length;i++){
+var v=Math.abs(buf[i]-128)/128;
+if(v>peak)peak=v;
+}
+var gain=(phase==="speaking")?7.2:8.2;
+instant=Math.min(1,peak*gain);
+}
+amp=lerp(amp,instant,(phase==="speaking"||phase==="listening")?0.55:0.35);
+var t=(now||performance.now())*0.001;
+var rate=(phase==="speaking")?(2.4+2.0*amp):(phase==="listening")?(2.8+1.6*amp):1.6;
+var wave=0.5+0.5*Math.sin(t*rate);
+var R=Rform;
+var pulse=0.0;
+if(phase==="speaking")pulse=lerp(0.08,0.26,amp);
+if(phase==="listening")pulse=lerp(0.10,0.34,amp);
+R=Rform*(1+pulse*wave);
+var orbCX=hp.x,orbCY=hp.y;
+var energy=(phase==="intro")?(0.16+0.10*Math.sin(t*1.3)):(0.28+0.26*Math.sin(t*1.7));
+var core=orbCtx.createRadialGradient(orbCX,orbCY,R*0.08,orbCX,orbCY,R);
+var g1=tint(GOLD_3,+6,0);
+var g2=tint(GOLD_1,0,-4);
+core.addColorStop(0.00,hsla(52,100,86,0.10+0.14*(energy+1.22*amp)));
+core.addColorStop(0.25,hsla(g1.h,g1.s,g1.l,0.14+0.26*(energy+1.22*amp)));
+core.addColorStop(0.65,hsla(g2.h,g2.s,g2.l,0.10+0.22*(energy+1.22*amp)));
+core.addColorStop(1.00,"rgba(0,0,0,0)");
+orbCtx.globalCompositeOperation="source-over";
+orbCtx.fillStyle=core;
+orbCtx.fillRect(0,0,cssW,cssH);
+orbCtx.globalCompositeOperation="lighter";
+for(var i=0;i<6;i++){
+var rr=R*(0.56+0.14*Math.sin(t*1.9+i));
+var ang=t*(0.55+i*0.17)+i*1.7;
+var ox=Math.cos(ang)*8;
+var oy=Math.sin(ang*1.07)*8;
+var gr=orbCtx.createRadialGradient(orbCX+ox,orbCY+oy,rr*0.06,orbCX+ox,orbCY+oy,rr);
+var rsel=(Math.sin(t*0.37+i*1.11)+1)/2;
+var pick=rsel<0.50?GOLD_1:(rsel<0.85?GOLD_2:{h:38,s:95,l:58});
+var a=0.14+0.32*(energy+1.22*amp);
+gr.addColorStop(0,hsla(pick.h,pick.s,pick.l,a));
+gr.addColorStop(1,"rgba(0,0,0,0)");
+orbCtx.fillStyle=gr;
+orbCtx.fillRect(0,0,cssW,cssH);
+}
+orbCtx.globalCompositeOperation="source-over";
 }
 requestAnimationFrame(drawOrb);
 
-/* ============================================
-   GREETING AUDIO PLAYBACK
-   ============================================ */
-async function playGreetingAudio() {
-  const {prime} = buildPlaylist();
-  if (!prime) return;
-  primeURL = prime;
-
-  try {
-    if (!ac) ac = new AC();
-    if (ac.state === 'suspended') await ac.resume();
-
-    const resp = await fetch(primeURL, {mode: "cors", cache: "no-store"});
-    if (!resp.ok) throw new Error("Fetch failed");
-
-    const arr = await resp.arrayBuffer();
-    const buf = await ac.decodeAudioData(arr);
-
-    greetingSource = ac.createBufferSource();
-    greetingSource.buffer = buf;
-
-    const g = ac.createGain();
-    g.gain.value = WEB_GAIN;
-
-    analyser = ac.createAnalyser();
-    analyser.fftSize = 1024;
-
-    greetingSource.connect(g);
-    g.connect(analyser);
-    analyser.connect(ac.destination);
-
-    greetingSource.onended = onGreetingEnded;
-    greetingSource.start(0);
-
-    phase = "speaking";
-    log("speaking");
-  } catch(e) {
-    console.warn("Audio playback failed:", e);
-    onGreetingEnded();
-  }
+function playGreetingAudio(){
+var playlist=buildPlaylist();
+var prime=playlist.prime;
+if(!prime)return;
+primeURL=prime;
+if(!ac)ac=new AC();
+if(ac.state==="suspended")ac.resume();
+fetch(primeURL,{mode:"cors",cache:"no-store"})
+.then(function(resp){
+if(!resp.ok)throw new Error("Fetch failed");
+return resp.arrayBuffer();
+})
+.then(function(arr){
+return new Promise(function(resolve,reject){
+ac.decodeAudioData(arr,resolve,reject);
+});
+})
+.then(function(buf){
+greetingSource=ac.createBufferSource();
+greetingSource.buffer=buf;
+var g=ac.createGain();
+g.gain.value=WEB_GAIN;
+analyser=ac.createAnalyser();
+analyser.fftSize=1024;
+greetingSource.connect(g);
+g.connect(analyser);
+analyser.connect(ac.destination);
+greetingSource.onended=onGreetingEnded;
+greetingSource.start(0);
+phase="speaking";
+log("speaking");
+})
+.catch(function(e){
+console.warn("Audio playback failed:",e);
+onGreetingEnded();
+});
 }
 
-function onGreetingEnded() {
-  phase = "listening";
-  hint.textContent = "Sing a song, then tap to continue";
-  hint.classList.add('on');
-  log("listening - waiting for mic");
-  setTimeout(() => {
-    if (phase === "listening") requestMic();
-  }, MIC_AUTO_MS);
+function onGreetingEnded(){
+phase="listening";
+hint.textContent="Sing a song, then tap to continue";
+hint.classList.add("on");
+log("listening - waiting for mic");
+setTimeout(function(){
+if(phase==="listening")requestMic();
+},MIC_AUTO_MS);
 }
 
-/* ============================================
-   MICROPHONE RECORDING
-   ============================================ */
-async function requestMic() {
-  if (phase !== "listening") return;
-
-  try {
-    if (!ac) ac = new AC();
-    if (ac.state === 'suspended') await ac.resume();
-
-    micStream = await navigator.mediaDevices.getUserMedia({audio: true});
-
-    // Create analyser for mic visualization
-    const mic = ac.createMediaStreamSource(micStream);
-    analyser = ac.createAnalyser();
-    analyser.fftSize = 1024;
-    mic.connect(analyser);
-
-    // Setup recorder
-    mediaRecorder = new MediaRecorder(micStream, {mimeType: 'audio/webm'});
-    recordedChunks = [];
-
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data.size > 0) recordedChunks.push(e.data);
-    };
-
-    mediaRecorder.onstop = () => {
-      processRecording();
-    };
-
-    mediaRecorder.start();
-
-    hint.textContent = "Tap anywhere when done singing";
-    log("recording...");
-  } catch(e) {
-    console.warn("Mic access denied:", e);
-    hint.textContent = "Tap to continue";
-  }
+function requestMic(){
+if(phase!=="listening")return;
+if(!ac)ac=new AC();
+if(ac.state==="suspended")ac.resume();
+navigator.mediaDevices.getUserMedia({audio:true})
+.then(function(stream){
+micStream=stream;
+var mic=ac.createMediaStreamSource(micStream);
+analyser=ac.createAnalyser();
+analyser.fftSize=1024;
+mic.connect(analyser);
+var options={};
+if(MediaRecorder.isTypeSupported("audio/webm")){
+options.mimeType="audio/webm";
+}
+mediaRecorder=new MediaRecorder(micStream,options);
+recordedChunks=[];
+mediaRecorder.ondataavailable=function(e){
+if(e.data.size>0)recordedChunks.push(e.data);
+};
+mediaRecorder.onstop=function(){
+processRecording();
+};
+mediaRecorder.start();
+hint.textContent="Tap anywhere when done singing";
+log("recording...");
+})
+.catch(function(e){
+console.warn("Mic access denied:",e);
+hint.textContent="Tap to continue";
+});
 }
 
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state === "recording") {
-    mediaRecorder.stop();
-  }
-  if (micStream) {
-    micStream.getTracks().forEach(t => t.stop());
-    micStream = null;
-  }
-  analyser = null;
-  hint.classList.remove('on');
+function stopRecording(){
+if(mediaRecorder&&mediaRecorder.state==="recording"){
+mediaRecorder.stop();
+}
+if(micStream){
+micStream.getTracks().forEach(function(t){t.stop();});
+micStream=null;
+}
+analyser=null;
+hint.classList.remove("on");
 }
 
-async function processRecording() {
-  if (recordedChunks.length === 0) {
-    startTransition();
-    return;
-  }
-
-  const blob = new Blob(recordedChunks, {type: 'audio/webm'});
-  const url = URL.createObjectURL(blob);
-
-  // Apply audio transformation (pitch shift, reverb simulation)
-  try {
-    const arrayBuffer = await blob.arrayBuffer();
-    const audioBuffer = await ac.decodeAudioData(arrayBuffer);
-
-    // Create transformed version with pitch shift and effects
-    const transformedBuffer = transformAudio(audioBuffer);
-
-    // Store for later playback
-    window.transformedAudioBuffer = transformedBuffer;
-  } catch(e) {
-    console.warn("Audio transform failed:", e);
-    // Store original as fallback
-    userAudio.src = url;
-  }
-
-  startTransition();
+function processRecording(){
+if(recordedChunks.length===0){
+startTransition();
+return;
+}
+var blob=new Blob(recordedChunks,{type:"audio/webm"});
+var url=URL.createObjectURL(blob);
+blob.arrayBuffer()
+.then(function(arrayBuffer){
+return new Promise(function(resolve,reject){
+ac.decodeAudioData(arrayBuffer,resolve,reject);
+});
+})
+.then(function(audioBuffer){
+var transformedBuffer=transformAudio(audioBuffer);
+window.transformedAudioBuffer=transformedBuffer;
+startTransition();
+})
+.catch(function(e){
+console.warn("Audio transform failed:",e);
+userAudio.src=url;
+startTransition();
+});
 }
 
-function transformAudio(buffer) {
-  // Create offline context for processing
-  const rate = buffer.sampleRate;
-  const duration = buffer.duration * 1.2; // Stretch slightly
-  const offlineCtx = new OfflineAudioContext(buffer.numberOfChannels, rate * duration, rate);
-
-  // Source
-  const source = offlineCtx.createBufferSource();
-  source.buffer = buffer;
-  source.playbackRate.value = 0.85; // Pitch down slightly for ethereal effect
-
-  // Create convolver for reverb-like effect
-  const convolver = offlineCtx.createConvolver();
-  const impulseLength = rate * 2;
-  const impulse = offlineCtx.createBuffer(2, impulseLength, rate);
-  for (let ch = 0; ch < 2; ch++) {
-    const data = impulse.getChannelData(ch);
-    for (let i = 0; i < impulseLength; i++) {
-      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / impulseLength, 2);
-    }
-  }
-  convolver.buffer = impulse;
-
-  // Gain nodes for wet/dry mix
-  const dry = offlineCtx.createGain();
-  dry.gain.value = 0.5;
-  const wet = offlineCtx.createGain();
-  wet.gain.value = 0.5;
-
-  // Connect
-  source.connect(dry);
-  source.connect(convolver);
-  convolver.connect(wet);
-  dry.connect(offlineCtx.destination);
-  wet.connect(offlineCtx.destination);
-
-  source.start();
-
-  return offlineCtx.startRendering();
+function transformAudio(buffer){
+var rate=buffer.sampleRate;
+var duration=buffer.duration*1.2;
+var offlineCtx=new OfflineAudioContext(buffer.numberOfChannels,rate*duration,rate);
+var source=offlineCtx.createBufferSource();
+source.buffer=buffer;
+source.playbackRate.value=0.85;
+var convolver=offlineCtx.createConvolver();
+var impulseLength=rate*2;
+var impulse=offlineCtx.createBuffer(2,impulseLength,rate);
+for(var ch=0;ch<2;ch++){
+var data=impulse.getChannelData(ch);
+for(var i=0;i<impulseLength;i++){
+data[i]=(Math.random()*2-1)*Math.pow(1-i/impulseLength,2);
+}
+}
+convolver.buffer=impulse;
+var dry=offlineCtx.createGain();
+dry.gain.value=0.5;
+var wet=offlineCtx.createGain();
+wet.gain.value=0.5;
+source.connect(dry);
+source.connect(convolver);
+convolver.connect(wet);
+dry.connect(offlineCtx.destination);
+wet.connect(offlineCtx.destination);
+source.start();
+return offlineCtx.startRendering();
 }
 
-/* ============================================
-   TRANSITION PHASE
-   ============================================ */
-function startTransition() {
-  phase = "transition";
-  log("transition - playing eggopen");
-
-  // Switch video to eggopen
-  video.src = VIDEO_OPEN;
-  video.loop = false;
-  video.load();
-
-  video.onloadeddata = () => {
-    nudgePlay(video, 30, 100);
-  };
-
-  video.onended = () => {
-    startArrival();
-  };
-
-  video.onerror = () => {
-    // Fallback if video fails
-    setTimeout(startArrival, 2000);
-  };
+function startTransition(){
+phase="transition";
+log("transition - playing eggopen");
+video.src=VIDEO_OPEN;
+video.loop=false;
+video.load();
+video.onloadeddata=function(){
+nudgePlay(video,30,100);
+};
+video.onended=function(){
+startArrival();
+};
+video.onerror=function(){
+setTimeout(startArrival,2000);
+};
 }
 
-/* ============================================
-   ARRIVAL PHASE
-   ============================================ */
-function startArrival() {
-  phase = "arrival";
-  log("arrival");
-
-  video.style.opacity = "0";
-  blackhole.classList.add('active');
-  buttonsContainer.classList.add('active');
-
-  // Initialize black hole effects
-  initBlackHoleFX();
-
-  // Animate buttons shooting out
-  animateButtonsOut();
-
-  // Play ambient audio
-  playAmbientAudio();
-
-  // Play transformed user audio
-  playTransformedAudio();
-
-  // Show HUD equalizer
-  showHUDEqualizer();
+function startArrival(){
+phase="arrival";
+log("arrival");
+video.style.opacity="0";
+blackhole.classList.add("active");
+buttonsContainer.classList.add("active");
+initBlackHoleFX();
+animateButtonsOut();
+playAmbientAudio();
+playTransformedAudio();
+showHUDEqualizer();
 }
 
-/* ============================================
-   FLOATING BUTTONS ANIMATION
-   ============================================ */
-const buttons = document.querySelectorAll('.float-btn');
-const buttonStates = [];
+var buttons=document.querySelectorAll(".float-btn");
+var buttonStates=[];
 
-function animateButtonsOut() {
-  const centerX = cssW / 2;
-  const centerY = cssH / 2;
-
-  buttons.forEach((btn, i) => {
-    const angle = (i / 6) * Math.PI * 2 + Math.random() * 0.5;
-    const distance = Math.min(cssW, cssH) * 0.3 + Math.random() * 50;
-    const targetX = centerX + Math.cos(angle) * distance;
-    const targetY = centerY + Math.sin(angle) * distance;
-
-    buttonStates.push({
-      el: btn,
-      x: centerX,
-      y: centerY,
-      targetX,
-      targetY,
-      vx: 0,
-      vy: 0,
-      angle,
-      floatPhase: Math.random() * Math.PI * 2,
-      floatSpeed: 0.5 + Math.random() * 0.5
-    });
-
-    // Animate from center
-    btn.style.left = centerX + 'px';
-    btn.style.top = centerY + 'px';
-    btn.style.transform = 'translate(-50%, -50%) scale(0)';
-    btn.style.opacity = '0';
-
-    setTimeout(() => {
-      btn.style.transition = 'all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)';
-      btn.style.opacity = '1';
-      btn.style.transform = 'translate(-50%, -50%) scale(1)';
-      btn.style.left = targetX + 'px';
-      btn.style.top = targetY + 'px';
-
-      setTimeout(() => {
-        btn.style.transition = '';
-        buttonStates[i].x = targetX;
-        buttonStates[i].y = targetY;
-      }, 800);
-    }, i * 100);
-  });
-
-  // Start floating animation
-  setTimeout(startFloatingAnimation, 1500);
+function animateButtonsOut(){
+var centerX=cssW/2;
+var centerY=cssH/2;
+buttons.forEach(function(btn,i){
+var angle=(i/6)*Math.PI*2+Math.random()*0.5;
+var distance=Math.min(cssW,cssH)*0.3+Math.random()*50;
+var targetX=centerX+Math.cos(angle)*distance;
+var targetY=centerY+Math.sin(angle)*distance;
+buttonStates.push({
+el:btn,
+x:centerX,
+y:centerY,
+targetX:targetX,
+targetY:targetY,
+vx:0,
+vy:0,
+angle:angle,
+floatPhase:Math.random()*Math.PI*2,
+floatSpeed:0.5+Math.random()*0.5
+});
+btn.style.left=centerX+"px";
+btn.style.top=centerY+"px";
+btn.style.transform="translate(-50%, -50%) scale(0)";
+btn.style.opacity="0";
+setTimeout(function(){
+btn.style.transition="all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)";
+btn.style.opacity="1";
+btn.style.transform="translate(-50%, -50%) scale(1)";
+btn.style.left=targetX+"px";
+btn.style.top=targetY+"px";
+setTimeout(function(){
+btn.style.transition="";
+buttonStates[i].x=targetX;
+buttonStates[i].y=targetY;
+},800);
+},i*100);
+});
+setTimeout(startFloatingAnimation,1500);
 }
 
-function startFloatingAnimation() {
-  function float(now) {
-    if (phase !== "arrival") return;
-
-    buttonStates.forEach((state, i) => {
-      state.floatPhase += 0.02 * state.floatSpeed;
-
-      // Gentle floating motion
-      const offsetX = Math.sin(state.floatPhase) * 15;
-      const offsetY = Math.cos(state.floatPhase * 0.7) * 10;
-
-      state.el.style.left = (state.targetX + offsetX) + 'px';
-      state.el.style.top = (state.targetY + offsetY) + 'px';
-    });
-
-    requestAnimationFrame(float);
-  }
-  requestAnimationFrame(float);
+function startFloatingAnimation(){
+function floatAnim(){
+if(phase!=="arrival")return;
+buttonStates.forEach(function(state){
+state.floatPhase+=0.02*state.floatSpeed;
+var offsetX=Math.sin(state.floatPhase)*15;
+var offsetY=Math.cos(state.floatPhase*0.7)*10;
+state.el.style.left=(state.targetX+offsetX)+"px";
+state.el.style.top=(state.targetY+offsetY)+"px";
+});
+requestAnimationFrame(floatAnim);
+}
+requestAnimationFrame(floatAnim);
 }
 
-/* ============================================
-   AMBIENT & TRANSFORMED AUDIO
-   ============================================ */
-async function playAmbientAudio() {
-  try {
-    ambientAudio.src = AMBIENT_URL;
-    ambientAudio.volume = 0.6;
-    await ambientAudio.play();
-  } catch(e) {
-    console.warn("Ambient audio failed:", e);
-  }
+function playAmbientAudio(){
+ambientAudio.src=AMBIENT_URL;
+ambientAudio.volume=0.6;
+ambientAudio.play().catch(function(e){
+console.warn("Ambient audio failed:",e);
+});
 }
 
-async function playTransformedAudio() {
-  if (window.transformedAudioBuffer) {
-    try {
-      const buffer = await window.transformedAudioBuffer;
-      const source = ac.createBufferSource();
-      source.buffer = buffer;
-
-      const gain = ac.createGain();
-      gain.gain.value = 0.7;
-
-      analyser = ac.createAnalyser();
-      analyser.fftSize = 64;
-
-      source.connect(gain);
-      gain.connect(analyser);
-      analyser.connect(ac.destination);
-
-      source.start();
-    } catch(e) {
-      console.warn("Transformed audio playback failed:", e);
-    }
-  }
+function playTransformedAudio(){
+if(window.transformedAudioBuffer){
+window.transformedAudioBuffer.then(function(buffer){
+var source=ac.createBufferSource();
+source.buffer=buffer;
+var gain=ac.createGain();
+gain.gain.value=0.7;
+analyser=ac.createAnalyser();
+analyser.fftSize=64;
+source.connect(gain);
+gain.connect(analyser);
+analyser.connect(ac.destination);
+source.start();
+}).catch(function(e){
+console.warn("Transformed audio playback failed:",e);
+});
+}
 }
 
-/* ============================================
-   HUD EQUALIZER
-   ============================================ */
-function showHUDEqualizer() {
-  // Create equalizer bars
-  const barCount = 24;
-  hud.innerHTML = '';
-  for (let i = 0; i < barCount; i++) {
-    const bar = document.createElement('div');
-    bar.className = 'eq-bar';
-    bar.style.height = '4px';
-    hud.appendChild(bar);
-  }
-
-  hud.classList.add('visible');
-
-  // Animate equalizer
-  const bars = hud.querySelectorAll('.eq-bar');
-
-  function animateEQ() {
-    if (!hud.classList.contains('visible')) return;
-
-    let levels = new Array(bars.length).fill(0);
-
-    if (analyser) {
-      const data = new Uint8Array(analyser.frequencyBinCount);
-      analyser.getByteFrequencyData(data);
-
-      for (let i = 0; i < bars.length; i++) {
-        const idx = Math.floor(i * data.length / bars.length);
-        levels[i] = data[idx] / 255;
-      }
-    } else {
-      // Simulate if no analyser
-      for (let i = 0; i < bars.length; i++) {
-        levels[i] = Math.random() * 0.3;
-      }
-    }
-
-    bars.forEach((bar, i) => {
-      const height = 4 + levels[i] * 36;
-      bar.style.height = height + 'px';
-    });
-
-    requestAnimationFrame(animateEQ);
-  }
-  requestAnimationFrame(animateEQ);
-
-  // Fade out after 10 seconds
-  setTimeout(() => {
-    hud.classList.add('fadeout');
-    setTimeout(() => {
-      hud.classList.remove('visible', 'fadeout');
-    }, 500);
-  }, 10000);
+function showHUDEqualizer(){
+var barCount=24;
+hud.innerHTML="";
+for(var i=0;i<barCount;i++){
+var bar=document.createElement("div");
+bar.className="eq-bar";
+bar.style.height="4px";
+hud.appendChild(bar);
+}
+hud.classList.add("visible");
+var bars=hud.querySelectorAll(".eq-bar");
+function animateEQ(){
+if(!hud.classList.contains("visible"))return;
+var levels=[];
+for(var i=0;i<bars.length;i++)levels[i]=0;
+if(analyser){
+var data=new Uint8Array(analyser.frequencyBinCount);
+analyser.getByteFrequencyData(data);
+for(var i=0;i<bars.length;i++){
+var idx=Math.floor(i*data.length/bars.length);
+levels[i]=data[idx]/255;
+}
+}else{
+for(var i=0;i<bars.length;i++){
+levels[i]=Math.random()*0.3;
+}
+}
+for(var i=0;i<bars.length;i++){
+var height=4+levels[i]*36;
+bars[i].style.height=height+"px";
+}
+requestAnimationFrame(animateEQ);
+}
+requestAnimationFrame(animateEQ);
+setTimeout(function(){
+hud.classList.add("fadeout");
+setTimeout(function(){
+hud.classList.remove("visible");
+hud.classList.remove("fadeout");
+},500);
+},10000);
 }
 
-/* ============================================
-   BLACK HOLE FX (from 2nd code block)
-   ============================================ */
-function initBlackHoleFX() {
-  const host = blackhole;
-  const HORIZON_RATIO = 0.26;
-  const REDUCED_MOTION = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  let bhAc = null, master = null, comp = null;
-
-  function ensureAudio() {
-    if (!AC) return null;
-    if (!bhAc) bhAc = ac || new AC({latencyHint: 'interactive'});
-    if (!master) {
-      master = bhAc.createGain();
-      master.gain.value = 0.9;
-      comp = bhAc.createDynamicsCompressor();
-      comp.threshold.value = -10;
-      comp.knee.value = 18;
-      comp.ratio.value = 6;
-      comp.attack.value = 0.003;
-      comp.release.value = 0.12;
-      master.connect(comp);
-      comp.connect(bhAc.destination);
-    }
-    return bhAc;
-  }
-
-  function singularityChime() {
-    const ctx = ensureAudio();
-    if (!ctx) return;
-    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
-
-    const t0 = ctx.currentTime + 0.01;
-    const dur = 1.25;
-
-    const carrier = ctx.createOscillator();
-    carrier.type = 'sine';
-
-    const mod = ctx.createOscillator();
-    mod.type = 'triangle';
-
-    const modGain = ctx.createGain();
-    modGain.gain.setValueAtTime(140, t0);
-    mod.connect(modGain);
-    modGain.connect(carrier.frequency);
-
-    const ring = ctx.createOscillator();
-    ring.type = 'square';
-
-    const ringGain = ctx.createGain();
-    ringGain.gain.value = 0.5;
-
-    const noise = (() => {
-      const nbuf = ctx.createBuffer(1, ctx.sampleRate * 0.25, ctx.sampleRate);
-      const data = nbuf.getChannelData(0);
-      for (let i = 0; i < data.length; i++) {
-        data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-      }
-      const src = ctx.createBufferSource();
-      src.buffer = nbuf;
-      src.loop = false;
-      return src;
-    })();
-
-    const hp = ctx.createBiquadFilter();
-    hp.type = 'highpass';
-    hp.frequency.setValueAtTime(800, t0);
-
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(0.9, t0 + 0.05);
-    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
-
-    const base = 220;
-    carrier.frequency.setValueAtTime(base * 4, t0);
-    carrier.frequency.exponentialRampToValueAtTime(base * 0.75, t0 + dur);
-
-    mod.frequency.setValueAtTime(12, t0);
-    mod.frequency.exponentialRampToValueAtTime(2.2, t0 + dur);
-    ring.frequency.setValueAtTime(90, t0);
-    ring.frequency.exponentialRampToValueAtTime(13, t0 + dur);
-
-    const carOut = ctx.createGain();
-    carrier.connect(carOut);
-    ring.connect(ringGain);
-    ringGain.connect(carOut.gain);
-    carOut.connect(g);
-
-    noise.connect(hp);
-    hp.connect(g);
-    g.connect(master);
-
-    carrier.start(t0);
-    mod.start(t0);
-    ring.start(t0);
-    noise.start(t0 + 0.02);
-    carrier.stop(t0 + dur + 0.05);
-    mod.stop(t0 + dur + 0.05);
-    ring.stop(t0 + dur + 0.05);
-    noise.stop(t0 + dur);
-  }
-
-  function wobble() {
-    host.classList.add('bhfx-wobbling');
-    setTimeout(() => host.classList.remove('bhfx-wobbling'), 740);
-  }
-
-  function makeCanvas(cls) {
-    const c = document.createElement('canvas');
-    c.className = cls;
-    c.style.position = 'absolute';
-    c.style.inset = '0';
-    c.style.pointerEvents = 'none';
-    c.width = Math.max(1, host.clientWidth || cssW);
-    c.height = Math.max(1, host.clientHeight || cssH);
-    host.appendChild(c);
-    return c;
-  }
-
-  function sparkleBurst() {
-    if (REDUCED_MOTION) return;
-
-    const canvas = makeCanvas('bhfx-overlay');
-    const ctx = canvas.getContext('2d', {alpha: true});
-    const count = 20 + Math.floor(Math.random() * 21);
-    const particles = [];
-    const center = {x: cssW / 2, y: cssH / 2};
-    const R0 = Math.min(cssW, cssH) * 0.46;
-    const Rh = Math.min(cssW, cssH) * HORIZON_RATIO;
-
-    for (let i = 0; i < count; i++) {
-      const th = Math.random() * Math.PI * 2;
-      const rr = R0 * (0.8 + Math.random() * 0.3);
-      const w = 0.7 + Math.random() * 1.1;
-      const speed = 0.8 + Math.random() * 1.5;
-      particles.push({th, r: rr, w, speed, a: 0.95, spin: 0.8 + Math.random() * 1.8});
-    }
-
-    let last = performance.now();
-
-    function tick(now) {
-      const dt = Math.min(34, now - last) / 1000;
-      last = now;
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = 'lighter';
-
-      for (const p of particles) {
-        p.th += p.spin * dt;
-        p.r -= (40 * p.speed) * dt;
-        if (p.r < Rh * 0.98) p.a *= 0.85;
-
-        const x = center.x + p.r * Math.cos(p.th);
-        const y = center.y + p.r * Math.sin(p.th);
-
-        ctx.globalAlpha = Math.max(0, p.a);
-        ctx.beginPath();
-        ctx.arc(x, y, p.w, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255,255,255,0.9)';
-        ctx.fill();
-      }
-
-      for (let i = particles.length - 1; i >= 0; i--) {
-        if (particles[i].a < 0.04 || particles[i].r < Rh * 0.6) {
-          particles.splice(i, 1);
-        }
-      }
-
-      if (particles.length === 0) {
-        canvas.remove();
-        return;
-      }
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  }
-
-  function attentionPing() {
-    window.dispatchEvent(new CustomEvent('blackhole:tap', {detail: {at: Date.now()}}));
-
-    const subs = Array.from(document.querySelectorAll('[data-bh-attention]'));
-    subs.forEach((el, i) => {
-      setTimeout(() => {
-        el.classList.add('bhfx-attn');
-        setTimeout(() => el.classList.remove('bhfx-attn'), 750);
-      }, i * 90);
-    });
-  }
-
-  const onDown = () => {
-    wobble();
-    singularityChime();
-    sparkleBurst();
-    attentionPing();
-  };
-
-  host.addEventListener('pointerdown', onDown, {passive: true});
-  host.addEventListener('touchstart', onDown, {passive: true});
-
-  host.bhfx = {wobble, sparkleBurst, attentionPing, singularityChime};
+function initBlackHoleFX(){
+var host=blackhole;
+var HORIZON_RATIO=0.26;
+var REDUCED_MOTION=matchMedia("(prefers-reduced-motion: reduce)").matches;
+var bhAc=null,master=null,comp=null;
+function ensureAudio(){
+if(!AC)return null;
+if(!bhAc)bhAc=ac||new AC({latencyHint:"interactive"});
+if(!master){
+master=bhAc.createGain();
+master.gain.value=0.9;
+comp=bhAc.createDynamicsCompressor();
+comp.threshold.value=-10;
+comp.knee.value=18;
+comp.ratio.value=6;
+comp.attack.value=0.003;
+comp.release.value=0.12;
+master.connect(comp);
+comp.connect(bhAc.destination);
+}
+return bhAc;
+}
+function singularityChime(){
+var ctx=ensureAudio();
+if(!ctx)return;
+if(ctx.state==="suspended")ctx.resume().catch(function(){});
+var t0=ctx.currentTime+0.01;
+var dur=1.25;
+var carrier=ctx.createOscillator();
+carrier.type="sine";
+var mod=ctx.createOscillator();
+mod.type="triangle";
+var modGain=ctx.createGain();
+modGain.gain.setValueAtTime(140,t0);
+mod.connect(modGain);
+modGain.connect(carrier.frequency);
+var ring=ctx.createOscillator();
+ring.type="square";
+var ringGain=ctx.createGain();
+ringGain.gain.value=0.5;
+var nbuf=ctx.createBuffer(1,ctx.sampleRate*0.25,ctx.sampleRate);
+var ndata=nbuf.getChannelData(0);
+for(var i=0;i<ndata.length;i++){
+ndata[i]=(Math.random()*2-1)*(1-i/ndata.length);
+}
+var noise=ctx.createBufferSource();
+noise.buffer=nbuf;
+noise.loop=false;
+var hp=ctx.createBiquadFilter();
+hp.type="highpass";
+hp.frequency.setValueAtTime(800,t0);
+var g=ctx.createGain();
+g.gain.setValueAtTime(0.0001,t0);
+g.gain.exponentialRampToValueAtTime(0.9,t0+0.05);
+g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+var base=220;
+carrier.frequency.setValueAtTime(base*4,t0);
+carrier.frequency.exponentialRampToValueAtTime(base*0.75,t0+dur);
+mod.frequency.setValueAtTime(12,t0);
+mod.frequency.exponentialRampToValueAtTime(2.2,t0+dur);
+ring.frequency.setValueAtTime(90,t0);
+ring.frequency.exponentialRampToValueAtTime(13,t0+dur);
+var carOut=ctx.createGain();
+carrier.connect(carOut);
+ring.connect(ringGain);
+ringGain.connect(carOut.gain);
+carOut.connect(g);
+noise.connect(hp);
+hp.connect(g);
+g.connect(master);
+carrier.start(t0);
+mod.start(t0);
+ring.start(t0);
+noise.start(t0+0.02);
+carrier.stop(t0+dur+0.05);
+mod.stop(t0+dur+0.05);
+ring.stop(t0+dur+0.05);
+noise.stop(t0+dur);
+}
+function wobble(){
+host.classList.add("bhfx-wobbling");
+setTimeout(function(){host.classList.remove("bhfx-wobbling");},740);
+}
+function makeCanvas(cls){
+var c=document.createElement("canvas");
+c.className=cls;
+c.style.position="absolute";
+c.style.inset="0";
+c.style.pointerEvents="none";
+c.width=Math.max(1,host.clientWidth||cssW);
+c.height=Math.max(1,host.clientHeight||cssH);
+host.appendChild(c);
+return c;
+}
+function sparkleBurst(){
+if(REDUCED_MOTION)return;
+var canvas=makeCanvas("bhfx-overlay");
+var ctx2=canvas.getContext("2d",{alpha:true});
+var count=20+Math.floor(Math.random()*21);
+var particles=[];
+var center={x:cssW/2,y:cssH/2};
+var R0=Math.min(cssW,cssH)*0.46;
+var Rh=Math.min(cssW,cssH)*HORIZON_RATIO;
+for(var i=0;i<count;i++){
+var th=Math.random()*Math.PI*2;
+var rr=R0*(0.8+Math.random()*0.3);
+var w=0.7+Math.random()*1.1;
+var speed=0.8+Math.random()*1.5;
+particles.push({th:th,r:rr,w:w,speed:speed,a:0.95,spin:0.8+Math.random()*1.8});
+}
+var last=performance.now();
+function tick(now){
+var dt=Math.min(34,now-last)/1000;
+last=now;
+ctx2.clearRect(0,0,canvas.width,canvas.height);
+ctx2.globalCompositeOperation="lighter";
+for(var j=0;j<particles.length;j++){
+var p=particles[j];
+p.th+=p.spin*dt;
+p.r-=(40*p.speed)*dt;
+if(p.r<Rh*0.98)p.a*=0.85;
+var x=center.x+p.r*Math.cos(p.th);
+var y=center.y+p.r*Math.sin(p.th);
+ctx2.globalAlpha=Math.max(0,p.a);
+ctx2.beginPath();
+ctx2.arc(x,y,p.w,0,Math.PI*2);
+ctx2.fillStyle="rgba(255,255,255,0.9)";
+ctx2.fill();
+}
+for(var j=particles.length-1;j>=0;j--){
+if(particles[j].a<0.04||particles[j].r<Rh*0.6){
+particles.splice(j,1);
+}
+}
+if(particles.length===0){
+canvas.remove();
+return;
+}
+requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+}
+function attentionPing(){
+window.dispatchEvent(new CustomEvent("blackhole:tap",{detail:{at:Date.now()}}));
+var subs=Array.from(document.querySelectorAll("[data-bh-attention]"));
+subs.forEach(function(el,i){
+setTimeout(function(){
+el.classList.add("bhfx-attn");
+setTimeout(function(){el.classList.remove("bhfx-attn");},750);
+},i*90);
+});
+}
+function onDown(){
+wobble();
+singularityChime();
+sparkleBurst();
+attentionPing();
+}
+host.addEventListener("pointerdown",onDown,{passive:true});
+host.addEventListener("touchstart",onDown,{passive:true});
+host.bhfx={wobble:wobble,sparkleBurst:sparkleBurst,attentionPing:attentionPing,singularityChime:singularityChime};
 }
 
-/* ============================================
-   VIDEO EVENTS
-   ============================================ */
-video.addEventListener("loadedmetadata", () => {
-  introDuration = video.duration || 0;
-  loopStart = Math.max(0, introDuration - LOOP_TAIL_SEC);
+video.addEventListener("loadedmetadata",function(){
+introDuration=video.duration||0;
+loopStart=Math.max(0,introDuration-LOOP_TAIL_SEC);
 });
 
-video.addEventListener("playing", () => {
-  video.classList.add('visible');
-}, {once: true});
+video.addEventListener("playing",function(){
+video.classList.add("visible");
+},{once:true});
 
-video.addEventListener("timeupdate", () => {
-  if (phase === "transition") return;
-  if (phase !== "idle" && phase !== "transition" && phase !== "arrival") {
-    const d = video.duration || 0;
-    // Loop the tail section during intro/speaking/listening
-    if (video.currentTime >= loopStart && phase !== "transition") {
-      if (phase === "intro") {
-        // First loop reached, start orb and audio
-        startOrbAndAudio();
-      }
-      const near = Math.max(0.05, 0.004 * d);
-      if (video.currentTime >= d - near) {
-        try {
-          video.currentTime = loopStart;
-          nudgePlay(video, 10, 80);
-        } catch(_) {}
-      }
-    }
-  }
+video.addEventListener("timeupdate",function(){
+if(phase==="transition")return;
+if(phase!=="idle"&&phase!=="transition"&&phase!=="arrival"){
+var d=video.duration||0;
+if(video.currentTime>=loopStart&&phase!=="transition"){
+if(phase==="intro"){
+startOrbAndAudio();
+}
+var near=Math.max(0.05,0.004*d);
+if(video.currentTime>=d-near){
+try{
+video.currentTime=loopStart;
+nudgePlay(video,10,80);
+}catch(e){}
+}
+}
+}
 });
 
-video.addEventListener("ended", () => {
-  if (phase === "transition") {
-    startArrival();
-  } else if (phase === "intro") {
-    startOrbAndAudio();
-    try {
-      video.currentTime = loopStart;
-      nudgePlay(video, 14, 90);
-    } catch(_) {}
-  }
+video.addEventListener("ended",function(){
+if(phase==="transition"){
+startArrival();
+}else if(phase==="intro"){
+startOrbAndAudio();
+try{
+video.currentTime=loopStart;
+nudgePlay(video,14,90);
+}catch(e){}
+}
 });
 
-function startOrbAndAudio() {
-  if (phase !== "intro") return;
-  formT0 = performance.now();
-  phase = "speaking";
-  setTimeout(() => {
-    playGreetingAudio();
-  }, 120);
+function startOrbAndAudio(){
+if(phase!=="intro")return;
+formT0=performance.now();
+phase="speaking";
+setTimeout(function(){
+playGreetingAudio();
+},120);
 }
 
-/* ============================================
-   TAP HANDLERS
-   ============================================ */
-
-// Initial tap to start
-function beginExperience(ev) {
-  try { ev && ev.preventDefault && ev.preventDefault(); } catch(_) {}
-  if (phase !== "idle") return;
-
-  size();
-  unlockAudio();
-
-  video.src = VIDEO_INTRO;
-  video.loop = false;
-  video.load();
-
-  try { video.currentTime = 0; } catch(_) {}
-  nudgePlay(video, 40, 90);
-
-  phase = "intro";
-  curtain.classList.add('hidden');
-  log("intro started");
+function beginExperience(ev){
+try{if(ev&&ev.preventDefault)ev.preventDefault();}catch(e){}
+if(phase!=="idle")return;
+size();
+unlockAudio();
+video.src=VIDEO_INTRO;
+video.loop=false;
+video.load();
+try{video.currentTime=0;}catch(e){}
+nudgePlay(video,40,90);
+phase="intro";
+curtain.classList.add("hidden");
+log("intro started");
 }
 
-["pointerdown", "touchstart", "click"].forEach(ev => {
-  curtain.addEventListener(ev, beginExperience, {passive: false, capture: true});
+["pointerdown","touchstart","click"].forEach(function(ev){
+curtain.addEventListener(ev,beginExperience,{passive:false,capture:true});
 });
 
-// Tap during listening to stop recording and transition
-document.addEventListener('pointerdown', (e) => {
-  if (phase === "listening") {
-    e.preventDefault();
-    stopRecording();
-  }
-}, {passive: false});
+document.addEventListener("pointerdown",function(e){
+if(phase==="listening"){
+e.preventDefault();
+stopRecording();
+}
+},{passive:false});
 
-document.addEventListener('touchstart', (e) => {
-  if (phase === "listening") {
-    stopRecording();
-  }
-}, {passive: true});
+document.addEventListener("touchstart",function(){
+if(phase==="listening"){
+stopRecording();
+}
+},{passive:true});
 
-/* ============================================
-   VISIBILITY HANDLING
-   ============================================ */
-document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible") {
-    if (ac && ac.state === "suspended") ac.resume();
-  }
-}, {passive: true});
+document.addEventListener("visibilitychange",function(){
+if(document.visibilityState==="visible"){
+if(ac&&ac.state==="suspended")ac.resume();
+}
+},{passive:true});
 
-/* ============================================
-   INIT
-   ============================================ */
 size();
 log("ready");
-
 })();
 </script>
 </body>
